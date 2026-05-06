@@ -828,7 +828,13 @@ const BecomeAVendor = () => {
                                     })()}
                                   </p>
                                   <p className="text-xs text-gray-400">
-                                    per {pkg.durationType}
+                                    {(() => {
+                                      const d = Number(pkg.duration) || 0;
+                                      const t = (pkg.durationType || 'months').toLowerCase();
+                                      // Singularize unit when duration is 1 (e.g. "1 month" not "1 months")
+                                      const unit = d === 1 ? t.replace(/s$/, '') : t;
+                                      return `for ${d} ${unit}`;
+                                    })()}
                                   </p>
                                   <ul className="mt-3 space-y-1.5">
                                     {pkg.features?.slice(0, 4).map((f, i) => (
