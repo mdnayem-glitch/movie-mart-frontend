@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
 
 export const watchlistApi = createApi({
   reducerPath: "watchlistApi",
