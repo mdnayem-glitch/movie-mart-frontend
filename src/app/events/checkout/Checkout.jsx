@@ -117,6 +117,7 @@ const Checkout = () => {
         quantity: bookingDetails.quantity,
         seatType: bookingDetails.seatType,
         eventCategory: bookingDetails.eventCategory || "Ticket Booking",
+        attendanceDate: bookingDetails.attendanceDate || bookingDetails.eventDate,
         countryCode,
         customerDetails: {
           name: form.name,
@@ -291,8 +292,11 @@ const Checkout = () => {
                     <div className="flex items-center gap-3 text-gray-300 text-sm">
                       <FaCalendarAlt className="text-pink-400" />
                       <span>
-                        {formatDate(bookingDetails.eventDate)} •{" "}
-                        {formatTime(bookingDetails.eventTime)}
+                        {formatDate(
+                          bookingDetails.attendanceDate ||
+                            bookingDetails.eventDate
+                        )}{" "}
+                        • {formatTime(bookingDetails.eventTime)}
                       </span>
                     </div>
 

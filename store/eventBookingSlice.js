@@ -8,6 +8,7 @@ const initialState = {
     quantity: 1,
     seatType: "Normal",
     eventCategory: null,
+    attendanceDate: null, // ISO string - for multi-day events, the specific day user is attending
     unitPrice: 0,
     totalAmount: 0,
     bookingFee: 0,
@@ -55,6 +56,9 @@ export const eventBookingSlice = createSlice({
       state.currentBooking.quantity = 1;
       state.currentBooking.seatType = "Normal";
       state.currentBooking.eventCategory = null;
+
+      // Default attendance date = event start date (for single & multi-day events)
+      state.currentBooking.attendanceDate = event.startDate || null;
       
       // Calculate initial amounts (no booking fee or GST)
       const totalAmount = event.ticketPrice * 1;
@@ -97,6 +101,11 @@ export const eventBookingSlice = createSlice({
     // Set event category (participation type)
     setEventCategory: (state, action) => {
       state.currentBooking.eventCategory = action.payload;
+    },
+
+    // Set attendance date (for multi-day events - which specific day the user will attend)
+    setAttendanceDate: (state, action) => {
+      state.currentBooking.attendanceDate = action.payload;
     },
     
     // Update customer details
@@ -167,6 +176,7 @@ export const {
   setQuantity,
   setSeatType,
   setEventCategory,
+  setAttendanceDate,
   setCustomerDetails,
   setPaymentOrder,
   setPaymentStatus,

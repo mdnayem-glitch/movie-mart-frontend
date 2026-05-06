@@ -65,6 +65,27 @@ const EventTicket = () => {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
+  // For multi-day events: compute which day index (1-based) the attendanceDate
+  // falls on and the total number of days. Returns null for single-day events.
+  const getDayBadge = (event, attendanceDate) => {
+    if (!event?.startDate || !event?.endDate || !attendanceDate) return null;
+    const start = new Date(event.startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(event.endDate);
+    end.setHours(0, 0, 0, 0);
+    const attend = new Date(attendanceDate);
+    attend.setHours(0, 0, 0, 0);
+
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const totalDays = Math.round((end - start) / msPerDay) + 1;
+    if (totalDays <= 1) return null;
+
+    const dayIndex = Math.round((attend - start) / msPerDay) + 1;
+    if (dayIndex < 1 || dayIndex > totalDays) return null;
+
+    return { dayIndex, totalDays };
+  };
+
   // Get status styling
   const getStatusStyle = (status) => {
     switch (status) {
@@ -246,7 +267,23 @@ const EventTicket = () => {
 
                       <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
                         <FaCalendarAlt className="text-pink-400" />
-                        <span>{formatDate(event?.startDate)}</span>
+                        <span>
+                          {formatDate(
+                            booking.attendanceDate || event?.startDate
+                          )}
+                        </span>
+                        {(() => {
+                          const dayBadge = getDayBadge(
+                            event,
+                            booking.attendanceDate
+                          );
+                          if (!dayBadge) return null;
+                          return (
+                            <span className="ml-1 px-1.5 py-0.5 rounded-md bg-pink-500/20 text-pink-300 text-[10px] font-semibold">
+                              Day {dayBadge.dayIndex} of {dayBadge.totalDays}
+                            </span>
+                          );
+                        })()}
                       </div>
 
                       <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
@@ -309,6 +346,7 @@ const EventTicket = () => {
             ticketRef={ticketRef}
             formatDate={formatDate}
             formatTime={formatTime}
+            getDayBadge={getDayBadge}
           />
         )}
       </div>
@@ -384,9 +422,13 @@ const ETicketModal = ({
   ticketRef,
   formatDate,
   formatTime,
+  getDayBadge,
 }) => {
   const event = booking.eventId;
   const eTicket = booking.eTicket;
+  const dayBadge = getDayBadge
+    ? getDayBadge(event, booking.attendanceDate)
+    : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -582,8 +624,22 @@ const ETicketModal = ({
                     margin: 0,
                   }}
                 >
-                  {formatDate(event?.startDate)}
+                  {formatDate(booking.attendanceDate || event?.startDate)}
                 </p>
+                {dayBadge && (
+                  <p
+                    style={{
+                      color: "#f472b6",
+                      fontWeight: "600",
+                      fontSize: "10px",
+                      margin: "4px 0 0 0",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Day {dayBadge.dayIndex} of {dayBadge.totalDays}
+                  </p>
+                )}
               </div>
               <div
                 style={{

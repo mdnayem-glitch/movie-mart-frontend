@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { X, Ticket, Users, AlertCircle, Tag } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { X, Ticket, Users, AlertCircle, Tag, Calendar } from "lucide-react";
 import Button from "@/app/components/Button";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +10,7 @@ import {
   setQuantity,
   setSeatType,
   setEventCategory,
+  setAttendanceDate,
   selectCurrentBooking,
   closeDrawer,
 } from "../../../store/eventBookingSlice";
@@ -22,6 +23,46 @@ const BookTicketDrawer = ({ event, onClose }) => {
   const [selectedSeats, setSelectedSeats] = useState(1);
   const [selectedSeatType, setSelectedSeatType] = useState(null);
   const [selectedEventCategory, setSelectedEventCategory] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null); // ISO string for the chosen attendance day
+
+  // Compute the list of event days between startDate and endDate (inclusive).
+  // Days are normalized to UTC midnight so the ISO string represents the same
+  // calendar day on both the client and the server regardless of timezone.
+  const eventDays = useMemo(() => {
+    if (!event?.startDate) return [];
+    const toUtcDayStart = (d) => {
+      const date = new Date(d);
+      return new Date(
+        Date.UTC(
+          date.getUTCFullYear(),
+          date.getUTCMonth(),
+          date.getUTCDate(),
+          0,
+          0,
+          0,
+          0
+        )
+      );
+    };
+
+    const start = toUtcDayStart(event.startDate);
+    const end = event.endDate
+      ? toUtcDayStart(event.endDate)
+      : toUtcDayStart(event.startDate);
+
+    const days = [];
+    const cursor = new Date(start);
+    // Safety cap at 60 days to avoid runaway loops
+    let guard = 0;
+    while (cursor.getTime() <= end.getTime() && guard < 60) {
+      days.push(new Date(cursor));
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+      guard += 1;
+    }
+    return days;
+  }, [event?.startDate, event?.endDate]);
+
+  const isMultiDay = eventDays.length > 1;
 
   useEffect(() => {
     if (event) {
@@ -36,6 +77,25 @@ const BookTicketDrawer = ({ event, onClose }) => {
       if (category) {
         setSelectedEventCategory(category);
         dispatch(setEventCategory(category));
+      }
+
+      // Default attendance day = event start date (first day), normalized to UTC
+      if (event.startDate) {
+        const d = new Date(event.startDate);
+        const firstDay = new Date(
+          Date.UTC(
+            d.getUTCFullYear(),
+            d.getUTCMonth(),
+            d.getUTCDate(),
+            0,
+            0,
+            0,
+            0
+          )
+        );
+        const iso = firstDay.toISOString();
+        setSelectedDay(iso);
+        dispatch(setAttendanceDate(iso));
       }
 
       // Set default seat type
@@ -92,12 +152,19 @@ const BookTicketDrawer = ({ event, onClose }) => {
     dispatch(setEventCategory(category));
   };
 
+  const handleDayChange = (isoDate) => {
+    setSelectedDay(isoDate);
+    dispatch(setAttendanceDate(isoDate));
+  };
+
   const handleProceedToCheckout = () => {
     // Store booking details in localStorage for checkout page
     const bookingDetails = {
       eventId: event._id,
       eventTitle: event.title,
       eventDate: event.startDate,
+      eventEndDate: event.endDate || event.startDate,
+      attendanceDate: selectedDay || event.startDate,
       eventTime: event.startTime,
       venue: event.location?.venueName,
       quantity: selectedSeats,
@@ -228,6 +295,59 @@ const BookTicketDrawer = ({ event, onClose }) => {
                 </div>
               </div>
 
+              {/* Day Selector - only shown for multi-day events */}
+              {isMultiDay && (
+                <div className="bg-white/5 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Calendar className="w-5 h-5 text-pink-400" />
+                    <label className="text-white font-medium">
+                      Which day are you attending?
+                    </label>
+                  </div>
+                  <p className="text-gray-400 text-xs mb-3">
+                    This event runs across {eventDays.length} days. Pick the day you want to attend.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {eventDays.map((day, idx) => {
+                      const iso = day.toISOString();
+                      const isSelected = selectedDay === iso;
+                      const weekday = day.toLocaleDateString("en-IN", {
+                        weekday: "short",
+                        timeZone: "UTC",
+                      });
+                      const dayNum = day.getUTCDate();
+                      const month = day.toLocaleDateString("en-IN", {
+                        month: "short",
+                        timeZone: "UTC",
+                      });
+                      return (
+                        <button
+                          key={iso}
+                          type="button"
+                          onClick={() => handleDayChange(iso)}
+                          className={`cursor-pointer rounded-xl border-2 p-3 text-center transition-all ${
+                            isSelected
+                              ? "bg-gradient-to-r from-pink-500/20 to-purple-600/20 border-pink-500 text-white"
+                              : "bg-white/5 border-transparent text-gray-300 hover:border-pink-500/50"
+                          }`}
+                        >
+                          <div className="text-[10px] uppercase tracking-wider text-gray-400">
+                            Day {idx + 1}
+                          </div>
+                          <div className="text-lg font-bold leading-none mt-1">
+                            {dayNum}
+                          </div>
+                          <div className="text-xs mt-1">{month}</div>
+                          <div className="text-[10px] text-gray-400 mt-0.5">
+                            {weekday}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Seat Types */}
               <div className="bg-white/5 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-4">
@@ -320,7 +440,8 @@ const BookTicketDrawer = ({ event, onClose }) => {
                 disabled={
                   !selectedSeatType ||
                   selectedSeats < 1 ||
-                  !selectedEventCategory
+                  !selectedEventCategory ||
+                  (isMultiDay && !selectedDay)
                 }
               >
                 Proceed to Checkout • ₹{currentBooking.finalAmount}
