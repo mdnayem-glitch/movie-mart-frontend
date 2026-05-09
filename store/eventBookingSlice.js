@@ -6,7 +6,9 @@ const initialState = {
     eventId: null,
     event: null,
     quantity: 1,
+    bookingType: "ticket", // "ticket" | "pass"
     seatType: "Normal",
+    eventPass: null, // when bookingType === "pass": name of the selected pass
     eventCategory: null,
     attendanceDate: null, // ISO string - for multi-day events, the specific day user is attending
     unitPrice: 0,
@@ -54,7 +56,9 @@ export const eventBookingSlice = createSlice({
       
       // Reset quantities
       state.currentBooking.quantity = 1;
+      state.currentBooking.bookingType = "ticket";
       state.currentBooking.seatType = "Normal";
+      state.currentBooking.eventPass = null;
       state.currentBooking.eventCategory = null;
 
       // Default attendance date = event start date (for single & multi-day events)
@@ -106,6 +110,28 @@ export const eventBookingSlice = createSlice({
     // Set attendance date (for multi-day events - which specific day the user will attend)
     setAttendanceDate: (state, action) => {
       state.currentBooking.attendanceDate = action.payload;
+    },
+
+    // Set booking type: "ticket" or "pass"
+    setBookingType: (state, action) => {
+      state.currentBooking.bookingType = action.payload;
+      // Passes cover all days, so clear attendanceDate when switching to pass
+      if (action.payload === "pass") {
+        state.currentBooking.attendanceDate = null;
+      }
+    },
+
+    // Set event pass (for bookingType === "pass")
+    setEventPass: (state, action) => {
+      const { name, price } = action.payload;
+      state.currentBooking.eventPass = name;
+      state.currentBooking.seatType = name; // mirror for display/back-compat
+      state.currentBooking.unitPrice = price;
+      const totalAmount = price * state.currentBooking.quantity;
+      state.currentBooking.totalAmount = totalAmount;
+      state.currentBooking.bookingFee = 0;
+      state.currentBooking.taxAmount = 0;
+      state.currentBooking.finalAmount = totalAmount;
     },
     
     // Update customer details
@@ -177,6 +203,8 @@ export const {
   setSeatType,
   setEventCategory,
   setAttendanceDate,
+  setBookingType,
+  setEventPass,
   setCustomerDetails,
   setPaymentOrder,
   setPaymentStatus,

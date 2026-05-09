@@ -115,9 +115,14 @@ const Checkout = () => {
       const orderData = {
         userId: user._id,
         quantity: bookingDetails.quantity,
+        bookingType: bookingDetails.bookingType || "ticket",
         seatType: bookingDetails.seatType,
+        eventPass: bookingDetails.eventPass || undefined,
         eventCategory: bookingDetails.eventCategory || "Ticket Booking",
-        attendanceDate: bookingDetails.attendanceDate || bookingDetails.eventDate,
+        attendanceDate:
+          bookingDetails.bookingType === "pass"
+            ? undefined
+            : bookingDetails.attendanceDate || bookingDetails.eventDate,
         countryCode,
         customerDetails: {
           name: form.name,
@@ -144,7 +149,10 @@ const Checkout = () => {
           amount: amount,
           currency: currency,
           name: bookingDetails.eventTitle,
-          description: `${bookingDetails.quantity} x ${bookingDetails.seatType} Ticket`,
+          description:
+            bookingDetails.bookingType === "pass"
+              ? `${bookingDetails.quantity} x ${bookingDetails.seatType} Event Pass`
+              : `${bookingDetails.quantity} x ${bookingDetails.seatType} Ticket`,
           order_id: orderId,
           prefill: {
             name: form.name,
@@ -291,13 +299,22 @@ const Checkout = () => {
                   <div className="mt-4 space-y-3">
                     <div className="flex items-center gap-3 text-gray-300 text-sm">
                       <FaCalendarAlt className="text-pink-400" />
-                      <span>
-                        {formatDate(
-                          bookingDetails.attendanceDate ||
-                            bookingDetails.eventDate
-                        )}{" "}
-                        • {formatTime(bookingDetails.eventTime)}
-                      </span>
+                      {bookingDetails.bookingType === "pass" &&
+                      bookingDetails.eventEndDate &&
+                      bookingDetails.eventEndDate !== bookingDetails.eventDate ? (
+                        <span>
+                          {formatDate(bookingDetails.eventDate)} →{" "}
+                          {formatDate(bookingDetails.eventEndDate)} • All days
+                        </span>
+                      ) : (
+                        <span>
+                          {formatDate(
+                            bookingDetails.attendanceDate ||
+                              bookingDetails.eventDate
+                          )}{" "}
+                          • {formatTime(bookingDetails.eventTime)}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-3 text-gray-300 text-sm">
@@ -309,7 +326,9 @@ const Checkout = () => {
                       <FaTicketAlt className="text-pink-400" />
                       <span>
                         {bookingDetails.quantity} x {bookingDetails.seatType}{" "}
-                        Ticket
+                        {bookingDetails.bookingType === "pass"
+                          ? "Pass"
+                          : "Ticket"}
                       </span>
                     </div>
                   </div>

@@ -235,6 +235,12 @@ const EventTicket = () => {
               const event = booking.eventId;
               const status = getStatusStyle(booking.paymentStatus);
               const StatusIcon = status.icon;
+              const isPass = booking.bookingType === "pass";
+              const isMultiDayEvent =
+                event?.startDate &&
+                event?.endDate &&
+                new Date(event.endDate).toDateString() !==
+                  new Date(event.startDate).toDateString();
 
               return (
                 <div
@@ -261,29 +267,46 @@ const EventTicket = () => {
 
                     {/* Event Details */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-semibold text-base line-clamp-1">
-                        {event?.title || "Event"}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-white font-semibold text-base line-clamp-1">
+                          {event?.title || "Event"}
+                        </h3>
+                        {isPass && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-pink-500/30 to-purple-600/30 border border-pink-400/50 text-pink-200 text-[10px] font-bold uppercase tracking-wider flex-shrink-0">
+                            Pass
+                          </span>
+                        )}
+                      </div>
 
                       <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
                         <FaCalendarAlt className="text-pink-400" />
-                        <span>
-                          {formatDate(
-                            booking.attendanceDate || event?.startDate
-                          )}
-                        </span>
-                        {(() => {
-                          const dayBadge = getDayBadge(
-                            event,
-                            booking.attendanceDate
-                          );
-                          if (!dayBadge) return null;
-                          return (
-                            <span className="ml-1 px-1.5 py-0.5 rounded-md bg-pink-500/20 text-pink-300 text-[10px] font-semibold">
-                              Day {dayBadge.dayIndex} of {dayBadge.totalDays}
+                        {isPass && isMultiDayEvent ? (
+                          <span>
+                            {formatDate(event?.startDate)} →{" "}
+                            {formatDate(event?.endDate)}
+                          </span>
+                        ) : (
+                          <>
+                            <span>
+                              {formatDate(
+                                booking.attendanceDate || event?.startDate
+                              )}
                             </span>
-                          );
-                        })()}
+                            {(() => {
+                              const dayBadge = getDayBadge(
+                                event,
+                                booking.attendanceDate
+                              );
+                              if (!dayBadge) return null;
+                              return (
+                                <span className="ml-1 px-1.5 py-0.5 rounded-md bg-pink-500/20 text-pink-300 text-[10px] font-semibold">
+                                  Day {dayBadge.dayIndex} of{" "}
+                                  {dayBadge.totalDays}
+                                </span>
+                              );
+                            })()}
+                          </>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
@@ -305,8 +328,10 @@ const EventTicket = () => {
                           </span>
                         </div>
                         <span className="text-white font-semibold">
-                          {booking.quantity} ticket
-                          {booking.quantity > 1 ? "s" : ""}
+                          {booking.quantity}{" "}
+                          {isPass
+                            ? `pass${booking.quantity > 1 ? "es" : ""}`
+                            : `ticket${booking.quantity > 1 ? "s" : ""}`}
                         </span>
                       </div>
                     </div>
@@ -426,9 +451,16 @@ const ETicketModal = ({
 }) => {
   const event = booking.eventId;
   const eTicket = booking.eTicket;
-  const dayBadge = getDayBadge
-    ? getDayBadge(event, booking.attendanceDate)
-    : null;
+  const isPass = booking.bookingType === "pass";
+  const isMultiDayEvent =
+    event?.startDate &&
+    event?.endDate &&
+    new Date(event.endDate).toDateString() !==
+      new Date(event.startDate).toDateString();
+  const dayBadge =
+    !isPass && getDayBadge
+      ? getDayBadge(event, booking.attendanceDate)
+      : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -508,7 +540,7 @@ const ETicketModal = ({
                       marginBottom: "8px",
                     }}
                   >
-                    E-TICKET
+                    {isPass ? "EVENT PASS" : "E-TICKET"}
                   </span>
                   <h2
                     style={{
@@ -549,7 +581,9 @@ const ETicketModal = ({
                       marginTop: "-2px",
                     }}
                   >
-                    {booking.seatType}
+                    {isPass
+                      ? booking.eventPass || booking.seatType
+                      : booking.seatType}
                   </span>
                 </div>
               </div>
@@ -613,32 +647,84 @@ const ETicketModal = ({
                       letterSpacing: "0.5px",
                     }}
                   >
-                    📅 DATE
+                    📅 {isPass && isMultiDayEvent ? "VALID" : "DATE"}
                   </span>
                 </div>
-                <p
-                  style={{
-                    color: "#ffffff",
-                    fontWeight: "600",
-                    fontSize: "14px",
-                    margin: 0,
-                  }}
-                >
-                  {formatDate(booking.attendanceDate || event?.startDate)}
-                </p>
-                {dayBadge && (
-                  <p
-                    style={{
-                      color: "#f472b6",
-                      fontWeight: "600",
-                      fontSize: "10px",
-                      margin: "4px 0 0 0",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                    }}
-                  >
-                    Day {dayBadge.dayIndex} of {dayBadge.totalDays}
-                  </p>
+                {isPass && isMultiDayEvent ? (
+                  <>
+                    <p
+                      style={{
+                        color: "#ffffff",
+                        fontWeight: "600",
+                        fontSize: "13px",
+                        margin: 0,
+                        lineHeight: "1.3",
+                      }}
+                    >
+                      {formatDate(event?.startDate)}
+                    </p>
+                    <p
+                      style={{
+                        color: "#9ca3af",
+                        fontSize: "11px",
+                        margin: "2px 0",
+                      }}
+                    >
+                      to
+                    </p>
+                    <p
+                      style={{
+                        color: "#ffffff",
+                        fontWeight: "600",
+                        fontSize: "13px",
+                        margin: 0,
+                        lineHeight: "1.3",
+                      }}
+                    >
+                      {formatDate(event?.endDate)}
+                    </p>
+                    <p
+                      style={{
+                        color: "#4ade80",
+                        fontWeight: "700",
+                        fontSize: "10px",
+                        margin: "4px 0 0 0",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      ALL DAYS ACCESS
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p
+                      style={{
+                        color: "#ffffff",
+                        fontWeight: "600",
+                        fontSize: "14px",
+                        margin: 0,
+                      }}
+                    >
+                      {formatDate(
+                        booking.attendanceDate || event?.startDate
+                      )}
+                    </p>
+                    {dayBadge && (
+                      <p
+                        style={{
+                          color: "#f472b6",
+                          fontWeight: "600",
+                          fontSize: "10px",
+                          margin: "4px 0 0 0",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        Day {dayBadge.dayIndex} of {dayBadge.totalDays}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
               <div
@@ -732,7 +818,7 @@ const ETicketModal = ({
                     fontWeight: "600",
                   }}
                 >
-                  TICKETS
+                  {isPass ? "PASSES" : "TICKETS"}
                 </p>
                 <p
                   style={{
@@ -962,7 +1048,9 @@ const ETicketModal = ({
                 margin: 0,
               }}
             >
-              Keep this ticket safe. Present it at the venue for entry.
+              {isPass
+                ? "Keep this pass safe. Present it at the venue for entry on any event day."
+                : "Keep this ticket safe. Present it at the venue for entry."}
             </p>
           </div>
         </div>
@@ -973,7 +1061,7 @@ const ETicketModal = ({
           className="w-full mt-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
         >
           <FaDownload />
-          Download E-Ticket
+          {isPass ? "Download Event Pass" : "Download E-Ticket"}
         </Button>
 
         {/* Instructions */}
