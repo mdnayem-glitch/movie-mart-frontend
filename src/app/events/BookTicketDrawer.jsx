@@ -266,6 +266,13 @@ const BookTicketDrawer = ({ event, onClose }) => {
       seatType: chosenName,
       eventPass: isPass ? selectedPass?.name : null,
       passDescription: isPass ? selectedPass?.description || "" : "",
+      passPerks: isPass
+        ? {
+            foodIncluded: !!selectedPass?.foodIncluded,
+            parkingAvailable: !!selectedPass?.parkingAvailable,
+            description: selectedPass?.description || "",
+          }
+        : null,
       eventCategory: selectedEventCategory,
       unitPrice: chosenPrice,
       totalAmount: currentBooking.totalAmount,
@@ -589,8 +596,23 @@ const BookTicketDrawer = ({ event, onClose }) => {
                             <p className="font-semibold text-white">
                               {pass.name}
                             </p>
+                            {/* Perks */}
+                            {(pass.foodIncluded || pass.parkingAvailable) && (
+                              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                {pass.foodIncluded && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-semibold">
+                                    🍽️ Food included
+                                  </span>
+                                )}
+                                {pass.parkingAvailable && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-semibold">
+                                    🅿️ Parking
+                                  </span>
+                                )}
+                              </div>
+                            )}
                             {pass.description && (
-                              <p className="text-gray-400 text-xs mt-0.5 line-clamp-2">
+                              <p className="text-gray-400 text-xs mt-1.5 line-clamp-2">
                                 {pass.description}
                               </p>
                             )}

@@ -86,6 +86,47 @@ const EventTicket = () => {
     return { dayIndex, totalDays };
   };
 
+  // For a "pass" booking, build a per-day scan status array so we can render
+  // each day with its own "Scanned / Not Scanned" indicator.
+  const getPassDays = (event, eTicket) => {
+    if (!event?.startDate) return [];
+    const start = new Date(event.startDate);
+    start.setUTCHours(0, 0, 0, 0);
+    const end = event.endDate ? new Date(event.endDate) : new Date(event.startDate);
+    end.setUTCHours(0, 0, 0, 0);
+
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const days = [];
+    const cursor = new Date(start);
+    let guard = 0;
+    while (cursor.getTime() <= end.getTime() && guard < 60) {
+      const dayKey = new Date(
+        Date.UTC(
+          cursor.getUTCFullYear(),
+          cursor.getUTCMonth(),
+          cursor.getUTCDate(),
+        ),
+      );
+      const usage = (eTicket?.passUsageHistory || []).find((u) => {
+        const d = new Date(u.dayDate);
+        return (
+          d.getUTCFullYear() === dayKey.getUTCFullYear() &&
+          d.getUTCMonth() === dayKey.getUTCMonth() &&
+          d.getUTCDate() === dayKey.getUTCDate()
+        );
+      });
+      days.push({
+        date: dayKey,
+        index: days.length + 1,
+        scanned: !!usage,
+        scannedAt: usage?.scannedAt || null,
+      });
+      cursor.setTime(cursor.getTime() + msPerDay);
+      guard += 1;
+    }
+    return days;
+  };
+
   // Get status styling
   const getStatusStyle = (status) => {
     switch (status) {
@@ -241,6 +282,7 @@ const EventTicket = () => {
                 event?.endDate &&
                 new Date(event.endDate).toDateString() !==
                   new Date(event.startDate).toDateString();
+              const passPerks = booking?.passPerks || {};
 
               return (
                 <div
@@ -334,6 +376,24 @@ const EventTicket = () => {
                             : `ticket${booking.quantity > 1 ? "s" : ""}`}
                         </span>
                       </div>
+
+                      {/* Pass perk badges */}
+                      {isPass &&
+                        (passPerks.foodIncluded ||
+                          passPerks.parkingAvailable) && (
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {passPerks.foodIncluded && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-semibold">
+                                🍽️ Food
+                              </span>
+                            )}
+                            {passPerks.parkingAvailable && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-300 text-[10px] font-semibold">
+                                🅿️ Parking
+                              </span>
+                            )}
+                          </div>
+                        )}
                     </div>
 
                     {/* Arrow */}
@@ -372,6 +432,7 @@ const EventTicket = () => {
             formatDate={formatDate}
             formatTime={formatTime}
             getDayBadge={getDayBadge}
+            getPassDays={getPassDays}
           />
         )}
       </div>
@@ -448,6 +509,7 @@ const ETicketModal = ({
   formatDate,
   formatTime,
   getDayBadge,
+  getPassDays,
 }) => {
   const event = booking.eventId;
   const eTicket = booking.eTicket;
@@ -461,6 +523,10 @@ const ETicketModal = ({
     !isPass && getDayBadge
       ? getDayBadge(event, booking.attendanceDate)
       : null;
+  const passPerks = booking?.passPerks || {};
+  const passDays = isPass && getPassDays ? getPassDays(event, eTicket) : [];
+  const passDaysScanned = passDays.filter((d) => d.scanned).length;
+  const passTotalDays = passDays.length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -797,6 +863,167 @@ const ETicketModal = ({
                 {event?.location?.address}, {event?.location?.city}
               </p>
             </div>
+
+            {/* Pass Perks (food / parking) */}
+            {isPass &&
+              (passPerks.foodIncluded || passPerks.parkingAvailable) && (
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    borderRadius: "12px",
+                    padding: "12px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div style={{ marginBottom: "8px" }}>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        textTransform: "uppercase",
+                        color: "#f472b6",
+                        fontWeight: "600",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      ✨ PASS PERKS
+                    </span>
+                  </div>
+                  <div
+                    style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}
+                  >
+                    {passPerks.foodIncluded && (
+                      <span
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "999px",
+                          backgroundColor: "rgba(16, 185, 129, 0.2)",
+                          border: "1px solid rgba(16, 185, 129, 0.4)",
+                          color: "#6ee7b7",
+                          fontSize: "11px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        🍽️ Food included
+                      </span>
+                    )}
+                    {passPerks.parkingAvailable && (
+                      <span
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "999px",
+                          backgroundColor: "rgba(59, 130, 246, 0.2)",
+                          border: "1px solid rgba(59, 130, 246, 0.4)",
+                          color: "#93c5fd",
+                          fontSize: "11px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        🅿️ Parking available
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            {/* Per-day scan status (passes only) */}
+            {isPass && passDays.length > 0 && (
+              <div
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.05)",
+                  borderRadius: "12px",
+                  padding: "12px",
+                  marginBottom: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    marginBottom: "8px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      textTransform: "uppercase",
+                      color: "#f472b6",
+                      fontWeight: "600",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    🎯 SCAN STATUS
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "#9ca3af",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {passDaysScanned} / {passTotalDays} days
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))",
+                    gap: "8px",
+                  }}
+                >
+                  {passDays.map((day) => (
+                    <div
+                      key={day.date.toISOString()}
+                      style={{
+                        backgroundColor: day.scanned
+                          ? "rgba(34, 197, 94, 0.15)"
+                          : "rgba(255, 255, 255, 0.04)",
+                        border: day.scanned
+                          ? "1px solid rgba(34, 197, 94, 0.4)"
+                          : "1px dashed rgba(156, 163, 175, 0.3)",
+                        borderRadius: "10px",
+                        padding: "8px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <p
+                        style={{
+                          color: "#9ca3af",
+                          fontSize: "9px",
+                          textTransform: "uppercase",
+                          margin: 0,
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        Day {day.index}
+                      </p>
+                      <p
+                        style={{
+                          color: "#ffffff",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          margin: "2px 0",
+                        }}
+                      >
+                        {formatDate(day.date)}
+                      </p>
+                      <p
+                        style={{
+                          color: day.scanned ? "#4ade80" : "#9ca3af",
+                          fontSize: "10px",
+                          fontWeight: "700",
+                          margin: 0,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        {day.scanned ? "✓ Used" : "Unused"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Ticket Details Row */}
             <div
