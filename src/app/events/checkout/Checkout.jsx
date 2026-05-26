@@ -86,7 +86,7 @@ const Checkout = () => {
       toast.error("Please enter a valid email");
       return false;
     }
-    if (!form.phone.trim() || form.phone.length < 10) {
+    if (form.phone.trim() && form.phone.trim().length < 10) {
       toast.error("Please enter a valid phone number");
       return false;
     }
@@ -400,16 +400,15 @@ const Checkout = () => {
 
                   <div>
                     <label className="block text-gray-400 text-sm mb-2">
-                      Phone Number *
+                      Phone Number <span className="text-gray-500">(optional)</span>
                     </label>
                     <input
                       type="tel"
                       name="phone"
                       value={form.phone}
                       onChange={handleChange}
-                      placeholder="Enter your phone number"
+                      placeholder="Razorpay will collect it if needed"
                       className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors"
-                      required
                     />
                   </div>
 
