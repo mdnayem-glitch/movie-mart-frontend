@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const privacyPolicyApi = createApi({
   reducerPath: "privacyPolicyApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/v1/api",
+    baseUrl: "https://api.moviemart.org/v1/api",
   }),
   tagTypes: ["privacyPolicyApi"],
   endpoints: (builder) => ({
