@@ -5,7 +5,7 @@ import Button from "@/app/components/Button";
 import { FaTimes, FaFilter } from "react-icons/fa";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
 
 const Filter = ({ onFilterChange, initialFilters = {} }) => {
   const [selected, setSelected] = useState({

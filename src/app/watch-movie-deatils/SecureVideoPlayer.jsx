@@ -93,7 +93,7 @@ const SecureVideoPlayer = ({
     setStreamError(null);
     
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
       const params = new URLSearchParams();
       if (userId) params.append('userId', userId);
       

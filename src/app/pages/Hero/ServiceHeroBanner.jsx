@@ -12,7 +12,7 @@ import "swiper/css/thumbs";
 import Link from "next/link";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
 
 // Service-specific configuration: endpoint, label, image field, title field, link builder
 const SERVICE_CONFIG = {

@@ -16,7 +16,7 @@ import Image from "next/image";
 import toast from "react-hot-toast";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
 
 const ProfileEditPage = () => {
   const router = useRouter();
