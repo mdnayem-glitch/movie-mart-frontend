@@ -26,7 +26,7 @@ export const BANNER_TYPES = {
 export const homeBannerApi = createApi({
   reducerPath: "homeBannerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://api.moviemart.org/v1/api",
+    baseUrl: "http://localhost:8080/v1/api",
   }),
   tagTypes: ["homeBanner"],
   endpoints: (builder) => ({
