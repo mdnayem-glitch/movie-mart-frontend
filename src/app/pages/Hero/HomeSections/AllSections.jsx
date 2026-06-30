@@ -18,7 +18,7 @@ const DIVIDER_TO_SERVICE = {
 };
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
+  process.env.NEXT_PUBLIC_API_URL;
 
 // Dynamic Section Divider Component
 const SectionDivider = ({ divider }) => {

@@ -26,7 +26,7 @@ export const BANNER_TYPES = {
 export const homeBannerApi = createApi({
   reducerPath: "homeBannerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/v1/api",
+        baseUrl: process.env.NEXT_PUBLIC_API_URL,
   }),
   tagTypes: ["homeBanner"],
   endpoints: (builder) => ({

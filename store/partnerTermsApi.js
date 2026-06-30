@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const partnerTermsApi = createApi({
   reducerPath: "partnerTermsApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/v1/api",
+        baseUrl: process.env.NEXT_PUBLIC_API_URL,
   }),
   tagTypes: ["partnerTermsApi"],
   endpoints: (builder) => ({

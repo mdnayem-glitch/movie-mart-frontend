@@ -4,8 +4,7 @@ import React, { useState, useEffect } from "react";
 import Button from "@/app/components/Button";
 import { FaTimes, FaFilter } from "react-icons/fa";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const Filter = ({ onFilterChange, initialFilters = {} }) => {
   const [selected, setSelected] = useState({

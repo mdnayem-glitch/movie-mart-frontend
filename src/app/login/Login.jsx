@@ -13,7 +13,7 @@ import { useGetGeneralSettingsQuery } from "../../../store/generalSettingsApi";
 import { COUNTRIES } from "@/data/countries";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
+  process.env.NEXT_PUBLIC_API_URL;
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();

@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const privacyPolicyApi = createApi({
   reducerPath: "privacyPolicyApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/v1/api",
+        baseUrl: process.env.NEXT_PUBLIC_API_URL,
   }),
   tagTypes: ["privacyPolicyApi"],
   endpoints: (builder) => ({

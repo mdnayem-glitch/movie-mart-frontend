@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const termsConditionsApi = createApi({
   reducerPath: "termsConditionsApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/v1/api",
+        baseUrl: process.env.NEXT_PUBLIC_API_URL,
   }),
   tagTypes: ["termsConditionsApi"],
   endpoints: (builder) => ({
