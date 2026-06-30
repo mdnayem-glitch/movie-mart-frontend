@@ -135,13 +135,6 @@ const BecomeAVendor = () => {
     address: "",
     email: "",
     phone: "",
-    // India specific
-    aadharFrontUrl: null,
-    aadharBackUrl: null,
-    panImageUrl: null,
-    // International
-    nationalIdUrl: null,
-    passportUrl: null,
   });
 
   // ✅ Selected Services
@@ -153,37 +146,13 @@ const BecomeAVendor = () => {
   const [selectedPackageId, setSelectedPackageId] = useState(null);
   const [isGovernmentEvent, setIsGovernmentEvent] = useState(false); // Government events have fixed 10% platform fee
 
-  // ✅ Previews
-  const [previews, setPreviews] = useState({
-    aadharFrontUrl: null,
-    aadharBackUrl: null,
-    panImageUrl: null,
-    nationalIdUrl: null,
-    passportUrl: null,
-  });
-
-  // Check if country is India
-  const isIndia = formData.country === "IN";
-
-  // KYC Upload step intentionally removed — KYC is optional and handled later.
+  // KYC upload removed — documents are optional and handled later if needed.
   const steps = ["Vendor Info", "Select Services", "Review"];
 
   // ✅ Handle input change
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (files) {
-      const file = files[0];
-      setFormData((prev) => ({ ...prev, [name]: file }));
-
-      // Preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviews((prev) => ({ ...prev, [name]: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // ✅ Step Validation
@@ -310,9 +279,20 @@ const BecomeAVendor = () => {
     try {
       const form = new FormData();
 
-      // Add basic fields
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null && value !== "") form.append(key, value);
+      const vendorFields = [
+        "vendorName",
+        "businessType",
+        "gstNumber",
+        "country",
+        "address",
+        "email",
+        "phone",
+      ];
+      vendorFields.forEach((key) => {
+        const value = formData[key];
+        if (value !== null && value !== undefined && value !== "") {
+          form.append(key, value);
+        }
       });
 
       // Build selected services array
@@ -362,11 +342,6 @@ const BecomeAVendor = () => {
         address: "",
         email: "",
         phone: "",
-        aadharFrontUrl: null,
-        aadharBackUrl: null,
-        panImageUrl: null,
-        nationalIdUrl: null,
-        passportUrl: null,
       });
       setSelectedServices({
         film_trade: false,
@@ -375,13 +350,6 @@ const BecomeAVendor = () => {
       });
       setSelectedPackageId(null);
       setIsGovernmentEvent(false);
-      setPreviews({
-        aadharFrontUrl: null,
-        aadharBackUrl: null,
-        panImageUrl: null,
-        nationalIdUrl: null,
-        passportUrl: null,
-      });
       // We keep the final step visible until they close modal or go home
     } catch (err) {
       console.log("❌ Full error object:", err);
@@ -1144,74 +1112,6 @@ const BecomeAVendor = () => {
                         <span className="text-gray-400">Address:</span>{" "}
                         <span className="text-white">{formData.address}</span>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* KYC Documents */}
-                  <div className="bg-gray-800/50 rounded-xl p-4">
-                    <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                      📄 KYC Documents
-                    </h4>
-                    <div className="flex gap-4 flex-wrap">
-                      {isIndia ? (
-                        <>
-                          {formData.aadharFrontUrl && (
-                            <div className="text-center">
-                              <span className="text-xs text-gray-400 block mb-1">
-                                Aadhar Front
-                              </span>
-                              <span className="text-green-400">✓ Uploaded</span>
-                            </div>
-                          )}
-                          {formData.aadharBackUrl && (
-                            <div className="text-center">
-                              <span className="text-xs text-gray-400 block mb-1">
-                                Aadhar Back
-                              </span>
-                              <span className="text-green-400">✓ Uploaded</span>
-                            </div>
-                          )}
-                          {formData.panImageUrl && (
-                            <div className="text-center">
-                              <span className="text-xs text-gray-400 block mb-1">
-                                PAN Card
-                              </span>
-                              <span className="text-green-400">✓ Uploaded</span>
-                            </div>
-                          )}
-                          {!formData.aadharFrontUrl &&
-                            !formData.aadharBackUrl &&
-                            !formData.panImageUrl && (
-                              <span className="text-gray-500">
-                                No documents uploaded
-                              </span>
-                            )}
-                        </>
-                      ) : (
-                        <>
-                          {formData.nationalIdUrl && (
-                            <div className="text-center">
-                              <span className="text-xs text-gray-400 block mb-1">
-                                National ID
-                              </span>
-                              <span className="text-green-400">✓ Uploaded</span>
-                            </div>
-                          )}
-                          {formData.passportUrl && (
-                            <div className="text-center">
-                              <span className="text-xs text-gray-400 block mb-1">
-                                Passport
-                              </span>
-                              <span className="text-green-400">✓ Uploaded</span>
-                            </div>
-                          )}
-                          {!formData.nationalIdUrl && !formData.passportUrl && (
-                            <span className="text-gray-500">
-                              No documents uploaded
-                            </span>
-                          )}
-                        </>
-                      )}
                     </div>
                   </div>
 
