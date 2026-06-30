@@ -283,6 +283,28 @@ const BecomeAVendor = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedCredentials, setSubmittedCredentials] = useState(null);
 
+  const buildValidationPayload = () => ({
+    vendorName: formData.vendorName,
+    businessType: formData.businessType,
+    gstNumber: formData.gstNumber || undefined,
+    country: formData.country,
+    address: formData.address,
+    email: formData.email,
+    phone: formData.phone,
+  });
+
+  const runBackendValidation = async () => {
+    const validationRes = await validateApplication(
+      buildValidationPayload(),
+    ).unwrap();
+
+    if (!validationRes.isValid) {
+      throw new Error(validationRes.message || "Validation failed");
+    }
+
+    return validationRes;
+  };
+
   // ✅ Submit form after payment (or directly if no payment needed)
   const submitApplication = async (paymentInfo = null) => {
     try {
@@ -385,21 +407,10 @@ const BecomeAVendor = () => {
     setIsProcessingPayment(true);
 
     try {
-      // ✅ STEP 1: Validate unique fields BEFORE payment
-      const validationRes = await validateApplication({
-        email: formData.email,
-        phone: formData.phone,
-        gstNumber: formData.gstNumber || undefined,
-        country: formData.country,
-      }).unwrap();
+      // Validate all form fields on the server before opening payment
+      await runBackendValidation();
 
-      if (!validationRes.isValid) {
-        toast.error(validationRes.message || "Validation failed");
-        setIsProcessingPayment(false);
-        return;
-      }
-
-      // ✅ STEP 2: Create payment order only after validation passes
+      // Create payment order only after validation passes
       const orderRes = await createPaymentOrder({
         packageId: selectedPackageId,
         customerDetails: {
@@ -478,6 +489,7 @@ const BecomeAVendor = () => {
     } catch (err) {
       // Show specific validation error if available
       const errorMessage =
+        err?.message ||
         err?.data?.message ||
         err?.data?.errors?.[0] ||
         "Failed to initiate payment";
@@ -489,6 +501,11 @@ const BecomeAVendor = () => {
   // ✅ Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Re-validate all steps before payment or submission
+    if (!validateStep(1) || !validateStep(2)) {
+      return;
+    }
 
     if (!hasSelectedService) {
       toast.error("Please select at least one service");
@@ -504,27 +521,19 @@ const BecomeAVendor = () => {
     if (selectedServices.film_trade && totalAmount > 0) {
       await handlePayment();
     } else {
-      // No payment needed - but still validate unique fields first
+      // No payment needed - but still validate on the server first
       setIsProcessingPayment(true);
       try {
-        const validationRes = await validateApplication({
-          email: formData.email,
-          phone: formData.phone,
-          gstNumber: formData.gstNumber || undefined,
-          country: formData.country,
-        }).unwrap();
-
-        if (!validationRes.isValid) {
-          toast.error(validationRes.message || "Validation failed");
-          setIsProcessingPayment(false);
-          return;
-        }
+        await runBackendValidation();
 
         // Validation passed, submit directly
         await submitApplication();
       } catch (err) {
         const errorMessage =
-          err?.data?.message || err?.data?.errors?.[0] || "Validation failed";
+          err?.message ||
+          err?.data?.message ||
+          err?.data?.errors?.[0] ||
+          "Validation failed";
         toast.error(errorMessage);
       } finally {
         setIsProcessingPayment(false);
