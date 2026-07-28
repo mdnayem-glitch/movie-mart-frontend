@@ -6,7 +6,6 @@ import {
   FaSignOutAlt,
   FaQuestionCircle,
   FaTicketAlt,
-  FaCalendarAlt,
   FaEdit,
   FaChevronRight,
   FaGoogle,
@@ -128,26 +127,22 @@ const ProfileSettings = () => {
                 <FaTicketAlt className="text-pink-400" />
                 My Bookings
               </h2>
-              <div className="grid grid-cols-2 gap-3">
-                <Link href="/profile-settings/movie-ticket">
-                  <div className="group bg-gradient-to-br from-blue-500/10 to-blue-600/5 hover:from-blue-500/20 hover:to-blue-600/10 rounded-2xl p-4 border border-blue-500/20 hover:border-blue-500/40 transition-all">
-                    <div className="text-3xl mb-2">🎬</div>
-                    <p className="text-white font-medium text-sm">
-                      Movie Tickets
-                    </p>
-                    <p className="text-gray-500 text-xs">View bookings</p>
+              <Link href="/profile-settings/event-ticket">
+                <div className="group bg-gradient-to-br from-purple-500/10 to-purple-600/5 hover:from-purple-500/20 hover:to-purple-600/10 rounded-2xl p-4 border border-purple-500/20 hover:border-purple-500/40 transition-all flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-2xl">
+                      🎸
+                    </div>
+                    <div>
+                      <p className="text-white font-medium text-sm">
+                        Event Tickets
+                      </p>
+                      <p className="text-gray-500 text-xs">View your event bookings</p>
+                    </div>
                   </div>
-                </Link>
-                <Link href="/profile-settings/event-ticket">
-                  <div className="group bg-gradient-to-br from-purple-500/10 to-purple-600/5 hover:from-purple-500/20 hover:to-purple-600/10 rounded-2xl p-4 border border-purple-500/20 hover:border-purple-500/40 transition-all">
-                    <div className="text-3xl mb-2">🎸</div>
-                    <p className="text-white font-medium text-sm">
-                      Event Tickets
-                    </p>
-                    <p className="text-gray-500 text-xs">View bookings</p>
-                  </div>
-                </Link>
-              </div>
+                  <FaChevronRight className="text-purple-400/50 group-hover:text-purple-400 transition-colors" />
+                </div>
+              </Link>
             </div>
 
             {/* Quick Actions */}

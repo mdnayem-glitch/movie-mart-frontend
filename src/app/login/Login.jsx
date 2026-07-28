@@ -243,8 +243,14 @@ const Login = () => {
   const handleEmailRegister = async (e) => {
     e.preventDefault();
 
-    if (!name || !email || !password || !phone) {
+    // Phone field in the register form uses `mobile` + country picker (same as phone login)
+    if (!name.trim() || !email.trim() || !password || !mobile.trim()) {
       toast.error("Please fill all required fields");
+      return;
+    }
+
+    if (!isValidPhone()) {
+      toast.error("Please enter a valid phone number");
       return;
     }
 
@@ -264,10 +270,10 @@ const Login = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          email,
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
           password,
-          phone: `${selectedCountry.phoneCode.replace(/\D/g, "")}${phone.replace(/\D/g, "")}`,
+          phone: buildFullPhone(),
         }),
       });
 
@@ -278,6 +284,8 @@ const Login = () => {
         setAuthMethod("email-login");
         // Clear form
         setName("");
+        setEmail("");
+        setMobile("");
         setPhone("");
         setPassword("");
         setConfirmPassword("");
