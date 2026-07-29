@@ -159,14 +159,14 @@ const ProfileSettings = () => {
                     subtitle="View your saved videos, movies & events"
                   />
                 </Link>
-                <Link href="/notification">
+                {/* <Link href="/notification">
                   <MenuItem
                     icon={<FaBell className="text-yellow-400" />}
                     title="Notifications"
                     subtitle="View your notifications"
                     badge={4}
                   />
-                </Link>
+                </Link> */}
               </div>
             </div>
 
