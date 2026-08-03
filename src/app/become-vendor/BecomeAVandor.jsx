@@ -692,7 +692,7 @@ const BecomeAVendor = () => {
                   {/* Password Fields */}
                   <div className="mt-2 p-4 bg-pink-500/5 border border-pink-500/20 rounded-xl space-y-4">
                     <p className="text-pink-400 text-xs font-semibold flex items-center gap-2">
-                      🔒 Set your Vendor Panel password — you'll use this to log in immediately after registration
+                      🔒 Set your Vendor Panel password.
                     </p>
 
                     {/* Password */}
