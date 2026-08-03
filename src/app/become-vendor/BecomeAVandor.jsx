@@ -135,7 +135,11 @@ const BecomeAVendor = () => {
     address: "",
     email: "",
     phone: "",
+    password: "",
+    confirmPassword: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // ✅ Selected Services
   const [selectedServices, setSelectedServices] = useState({
@@ -175,6 +179,18 @@ const BecomeAVendor = () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
           toast.error("Please enter a valid email address");
+          return false;
+        }
+        if (!formData.password.trim()) {
+          toast.error("Please set a password for your vendor panel");
+          return false;
+        }
+        if (formData.password.trim().length < 8) {
+          toast.error("Password must be at least 8 characters");
+          return false;
+        }
+        if (formData.password !== formData.confirmPassword) {
+          toast.error("Passwords do not match");
           return false;
         }
         if (!formData.phone.trim()) {
@@ -260,6 +276,7 @@ const BecomeAVendor = () => {
     address: formData.address,
     email: formData.email,
     phone: formData.phone,
+    password: formData.password,
   });
 
   const runBackendValidation = async () => {
@@ -287,6 +304,7 @@ const BecomeAVendor = () => {
         "address",
         "email",
         "phone",
+        "password",
       ];
       vendorFields.forEach((key) => {
         const value = formData[key];
@@ -342,6 +360,8 @@ const BecomeAVendor = () => {
         address: "",
         email: "",
         phone: "",
+        password: "",
+        confirmPassword: "",
       });
       setSelectedServices({
         film_trade: false,
@@ -668,6 +688,77 @@ const BecomeAVendor = () => {
                       />
                     </div>
                   ))}
+
+                  {/* Password Fields */}
+                  <div className="mt-2 p-4 bg-pink-500/5 border border-pink-500/20 rounded-xl space-y-4">
+                    <p className="text-pink-400 text-xs font-semibold flex items-center gap-2">
+                      🔒 Set your Vendor Panel password — you'll use this to log in immediately after registration
+                    </p>
+
+                    {/* Password */}
+                    <div>
+                      <label className="text-gray-300 font-medium mb-2 block">
+                        Panel Password <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          required
+                          placeholder="Min. 8 characters"
+                          className="w-full bg-gray-900 border border-gray-600 text-white text-sm py-3 px-4 pr-12 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all placeholder-gray-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((p) => !p)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors text-sm"
+                        >
+                          {showPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div>
+                      <label className="text-gray-300 font-medium mb-2 block">
+                        Confirm Password <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          name="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          required
+                          placeholder="Re-enter your password"
+                          className={`w-full bg-gray-900 border text-white text-sm py-3 px-4 pr-12 rounded-lg focus:ring-2 transition-all placeholder-gray-500 ${
+                            formData.confirmPassword && formData.password !== formData.confirmPassword
+                              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                              : formData.confirmPassword && formData.password === formData.confirmPassword
+                              ? "border-green-500 focus:ring-green-500 focus:border-green-500"
+                              : "border-gray-600 focus:ring-pink-500 focus:border-pink-500"
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword((p) => !p)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors text-sm"
+                        >
+                          {showConfirmPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                      {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                        <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
+                      )}
+                      {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                        <p className="text-green-400 text-xs mt-1">✓ Passwords match</p>
+                      )}
+                    </div>
+                  </div>
+
+
 
                   {/* Country Selection */}
                   <div>
@@ -1251,77 +1342,66 @@ const BecomeAVendor = () => {
         </div>
       </section>
 
-      {/* Success Modal */}
+      {/* Success Modal — Vendor is instantly approved, show login credentials */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
           <div className="bg-gray-900 border border-gray-700 rounded-3xl max-w-lg w-full p-8 text-center shadow-2xl relative overflow-hidden">
-            {/* Decorative Background Circles */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-pink-500/10 rounded-full blur-3xl"></div>
+            {/* Decorative Background */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-green-500/10 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
 
             <div className="relative z-10">
-              <div className="w-20 h-20 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-lg shadow-green-500/20">
+              {/* Icon */}
+              <div className="w-20 h-20 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-lg shadow-green-500/20">
                 <FaCheckCircle />
               </div>
 
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Application Received!
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                🎉 You&apos;re Approved!
               </h2>
+              <p className="text-green-400 font-semibold mb-6 text-sm">
+                Your vendor account is ready. Log in to your panel now.
+              </p>
 
-              <div className="space-y-4 text-gray-300 mb-8">
-                <p className="text-lg">
-                  Thank you for applying to be a{" "}
-                  <span className="text-pink-400 font-semibold">Film Mart</span>{" "}
-                  partner.
-                </p>
+              {/* Credentials Card */}
+              {submittedCredentials && (
+                <div className="bg-gray-800 border border-green-500/30 rounded-2xl p-5 mb-6 text-left space-y-3">
+                  <p className="text-green-400 text-xs font-semibold uppercase tracking-wider mb-3">🔑 Your Login Credentials</p>
 
-                <div className="bg-white/5 rounded-2xl p-4 text-sm text-left space-y-3 border border-white/10">
-                  <div className="flex gap-3">
-                    <span className="text-blue-400 mt-1">📧</span>
-                    <p>
-                      A submission confirmation email has been sent to{" "}
-                      <span className="text-white font-medium">
-                        {formData.email}
-                      </span>
-                      .
-                    </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between bg-gray-900/60 rounded-lg px-4 py-3">
+                      <span className="text-gray-400 text-xs font-medium">Email</span>
+                      <span className="text-white text-sm font-mono font-semibold">{submittedCredentials.email}</span>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-900/60 rounded-lg px-4 py-3">
+                      <span className="text-gray-400 text-xs font-medium">Password</span>
+                      <span className="text-white text-sm font-mono font-semibold">{submittedCredentials.password}</span>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-900/60 rounded-lg px-4 py-3">
+                      <span className="text-gray-400 text-xs font-medium">Panel URL</span>
+                      <span className="text-pink-400 text-xs font-mono">panel.moviemart.org</span>
+                    </div>
                   </div>
-                  <div className="flex gap-3">
-                    <span className="text-yellow-400 mt-1">🕒</span>
-                    <p>
-                      Our team will review your application within{" "}
-                      <span className="text-white font-medium">
-                        24 to 48 hours
-                      </span>
-                      .
-                    </p>
-                  </div>
-  
-                  <div className="flex gap-3">
-                    <span className="text-green-400 mt-1">✅</span>
-                    <p>
-                      Once approved, you will receive a confirmation email with
-                      your login credentials.
-                    </p>
-                  </div>
+
+                  <p className="text-gray-500 text-xs text-center pt-1">📧 These credentials have also been sent to your email.</p>
                 </div>
-              </div>
+              )}
 
+              {/* Actions */}
               <div className="flex flex-col gap-3">
+                <a
+                  href={submittedCredentials?.panelUrl || "https://panel.moviemart.org/auth/sign-in"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/30 flex items-center justify-center gap-2"
+                >
+                  <FaRocket /> Login to Vendor Panel
+                </a>
                 <button
                   onClick={() => (window.location.href = "/")}
-                  className="w-full py-4 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-xl font-bold text-lg hover:from-pink-600 hover:to-red-600 transition-all shadow-lg shadow-pink-500/30"
-                >
-                  Go to Home Page
-                </button>
-                <button
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    setStep(1);
-                  }}
                   className="w-full py-3 bg-white/5 text-gray-400 rounded-xl font-medium hover:bg-white/10 transition-all"
                 >
-                  Close
+                  Go to Home Page
                 </button>
               </div>
             </div>
